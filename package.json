@@ -1,0 +1,35 @@
+{
+  "name": "video-frames-service-nodejs",
+  "version": "0.0.1",
+  "description": "Service for extracting frames from original video for future processing.",
+  "main": "index.js",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "ffmpeg": "0.0.4",
+    "nsqjs": "^0.7.6",
+    "request": "^2.72.0",
+    "tmp": "0.0.28"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clickberry/video-frames-service-nodejs"
+  },
+  "keywords": [
+    "clickberry",
+    "webservices",
+    "node.js",
+    "video",
+    "frames",
+    "extract"
+  ],
+  "author": "Alexey Melnikov",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/clickberry/video-frames-service-nodejs/issues"
+  }
+}
