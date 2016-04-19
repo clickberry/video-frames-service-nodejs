@@ -61,6 +61,46 @@ function extractFrames(filePath, toPath, fn) {
   }
 }
 
+function uploadFrameToS3(bucket_name, dir_name, file_path, fn) {
+  var fileStream = fs.createReadStream(file_path);
+  var fileName = path.basename(file_path);
+  var key = dir_name + '/' + fileName;
+  debug('Uploading video frame to the bucket: ' + key);
+
+  var params = {
+    Bucket: bucket_name,
+    Key: key,
+    ACL: 'public-read',
+    Body: fileStream,
+    ContentType: 'image/jpeg'
+  };
+
+  s3.upload(params, function (err) {
+    if (err) return fn(err);
+
+    var uri = getBlobUrl(bucket_name, key);
+    debug('Video frame uploaded: ' + uri);
+    fn(null, uri);
+  });
+}
+
+function publishFrameEvent(video_id, uri, fn) {
+  // parsing frame index
+  var fileName = path.basename(uri);
+  var pattern = /_(\d+)/;
+  var match = pattern.exec(fileName);
+  var idx = parseInt(match[1]);
+
+  var frame = {
+    uri: uri,
+    video_id: video_id,
+    frame_idx: idx
+  };
+  bus.publishVideoFrameCreated(frame, function (err) {
+    fn(err);
+  });
+}
+
 function getBlobUrl(bucket_name, key_name) {
   return 'https://' + bucket_name + '.s3.amazonaws.com/' + key_name;
 }
@@ -86,41 +126,21 @@ function getBlobUrl(bucket_name, key_name) {
 
           // upload files to s3 and generate events
           var s3Dir = uuid.v4();
-          var uploadedFiles = 0;
           files.forEach(function (file) {
-            var fileStream = fs.createReadStream(file);
-            var fileName = path.basename(file);
-            var key = s3Dir + '/' + fileName;
-            debug('Uploading video frame to the bucket: ' + key);
-
-            var params = {
-              Bucket: bucket,
-              Key: key,
-              ACL: 'public-read',
-              Body: fileStream,
-              ContentType: 'image/jpeg'
-            };
-
-            s3.upload(params, function (err) {
-              uploadedFiles++;
+            uploadFrameToS3(bucket, s3Dir, file, function (err, uri) {
               if (err) return handleError(err);
-
-              var url = getBlobUrl(bucket, key);
-              debug('Video frame uploaded: ' + url);
-
-              // todo: generating event to the bus
-              
-              if (uploadedFiles === files.length) {
-                // delete local frames
-                cleanup_dir();
-
-                process.exit();
-              }
+              // generating event to the bus
+              publishFrameEvent(0, uri, function (err) {
+                if (err) return handleError(err);
+                // delete local file
+                fs.unlink(file, function (err) {
+                  if (err) return handleError(err);
+                });
+              });
             });
           });
         });
       });
-
     });
   });
 })(file_url);
