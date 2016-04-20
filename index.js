@@ -36,15 +36,16 @@ bus.on('video-created', function (msg) {
       publishFrameEvent(video.id, frame.idx, frame.uri, function (err) {
         if (err) handleError(err);
       });
+    })
+    .on('error', function(err) {
+      handleError(err);
     });
   sequencer.downloadAndExtractToS3(video.uri, bucket, function (err) {
-    if (err) {
-      if (err.fatal) {
-        // bad message, removing it from the queue
-        msg.finish();
-      }
-      return handleError();
+    if (err && !err.fatal) {
+      // re-queue the message again if not fatal
+      return;
     }
+
     msg.finish();
   });
 });
