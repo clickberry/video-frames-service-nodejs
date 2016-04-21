@@ -1,9 +1,10 @@
 {
   "name": "video-frames-service-nodejs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Service for extracting frames from original video for future processing.",
   "main": "index.js",
   "dependencies": {
+    "async": "^1.5.2",
     "aws-sdk": "^2.3.3",
     "debug": "^2.2.0",
     "ffmpeg": "0.0.4",
