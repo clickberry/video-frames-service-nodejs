@@ -1,6 +1,6 @@
 {
   "name": "video-frames-service-nodejs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Service for extracting frames from original video for future processing.",
   "main": "index.js",
   "dependencies": {
