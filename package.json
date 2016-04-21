@@ -11,7 +11,8 @@
     "node-uuid": "^1.4.7",
     "nsqjs": "^0.7.6",
     "request": "^2.72.0",
-    "tmp": "0.0.28"
+    "tmp": "0.0.28",
+    "node-ffmpeg": "https://github.com/clickberry/node-ffmpeg"
   },
   "devDependencies": {},
   "scripts": {
