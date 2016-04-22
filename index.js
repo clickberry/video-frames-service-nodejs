@@ -43,9 +43,11 @@ bus.on('video-created', function (msg) {
   sequencer.downloadAndExtractToS3(video.uri, bucket, function (err) {
     if (err && !err.fatal) {
       // re-queue the message again if not fatal
+      debug('Video processing failed (' + video.uri +  '), skipping the file: ' + err);
       return;
     }
 
+    debug('Video processing completed successfully: ' + video.uri);
     msg.finish();
   });
 });
