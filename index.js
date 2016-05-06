@@ -27,7 +27,7 @@ function publishFrameEvent(video_id, frame_idx, frame_uri, fn) {
 
 bus.on('video-created', function (msg) {
   var video = JSON.parse(msg.body);
-  debug('Video created: ' + JSON.stringify(video));
+  debug('New video: ' + JSON.stringify(video));
 
   // extracting and uploading frames
   var sequencer = new Sequencer()
