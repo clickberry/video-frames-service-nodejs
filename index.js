@@ -14,15 +14,15 @@ function handleError(err) {
   console.error(err);
 }
 
-function publishFrameEvent(videoId, segmentIdx, segmentFps, segmentFrames, frameIdx, frameUri, fn) {
+function publishFrameEvent(videoId, segmentIdx, fps, framesPerSegment, frameIdx, frameUri, fn) {
   // calculating absolute frame index using segment idx and number of frames per segment
-  var frameAbsoluteIdx = segmentIdx * segmentFrames + frameIdx;
+  var frameAbsoluteIdx = segmentIdx * framesPerSegment + frameIdx;
 
   var data = {
     videoId: videoId,
     segmentIdx: segmentIdx,
-    segmentFps: segmentFps,
-    segmentFrames: segmentFrames,
+    fps: fps,
+    framesPerSegment: framesPerSegment,
     uri: frameUri,
     frameIdx: frameAbsoluteIdx
   };
