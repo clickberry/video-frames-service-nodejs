@@ -14,40 +14,46 @@ function handleError(err) {
   console.error(err);
 }
 
-function publishFrameEvent(video_id, frame_idx, frame_uri, fn) {
-  var frame = {
-    uri: frame_uri,
-    video_id: video_id,
-    frame_idx: frame_idx
+function publishFrameEvent(videoId, segmentIdx, segmentFps, segmentFrames, frameIdx, frameUri, fn) {
+  // calculating absolute frame index using segment idx and number of frames per segment
+  var frameAbsoluteIdx = segmentIdx * segmentFrames + frameIdx;
+
+  var data = {
+    videoId: videoId,
+    segmentIdx: segmentIdx,
+    segmentFps: segmentFps,
+    segmentFrames: segmentFrames,
+    uri: frameUri,
+    frameIdx: frameAbsoluteIdx
   };
-  bus.publishVideoFrameCreated(frame, function (err) {
-    fn(err);
-  });
+
+  bus.publishVideoFrameCreated(data, fn);
 }
 
-bus.on('video-created', function (msg) {
-  var video = JSON.parse(msg.body);
-  debug('New video: ' + JSON.stringify(video));
+bus.on('segment', function (msg) {
+  var segment = JSON.parse(msg.body);
+  debug('New segment: ' + JSON.stringify(segment));
 
   // extracting and uploading frames
   var sequencer = new Sequencer()
     .on('frame', function (frame) {
       // generate frame event
-      publishFrameEvent(video.id, frame.idx, frame.uri, function (err) {
+      publishFrameEvent(segment.id, frame.idx, frame.uri, function (err) {
         if (err) handleError(err);
       });
     })
     .on('error', function(err) {
       handleError(err);
     });
-  sequencer.downloadAndExtractToS3(video.uri, bucket, function (err) {
+
+  sequencer.downloadAndExtractToS3(segment.uri, bucket, function (err) {
     if (err && !err.fatal) {
       // re-queue the message again if not fatal
-      debug('Video processing failed (' + video.uri +  '), skipping the file: ' + err);
+      debug('Video segment processing failed (' + segment.uri +  '), skipping the file: ' + err);
       return;
     }
 
-    debug('Video processing completed successfully: ' + video.uri);
+    debug('Video segment processing completed successfully: ' + segment.uri);
     msg.finish();
   });
 });
