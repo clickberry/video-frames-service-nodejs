@@ -20,7 +20,7 @@ function publishFrameEvent(videoId, segmentIdx, frameIdx, frameUri, fn) {
   var data = {
     videoId: videoId,
     segmentIdx: segmentIdx,
-    frameIdx: frameAbsoluteIdx,
+    frameIdx: frameIdx,
     uri: frameUri
   };
 
