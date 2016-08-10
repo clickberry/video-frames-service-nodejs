@@ -5,6 +5,8 @@ if (!process.env.S3_BUCKET) {
 }
 var bucket = process.env.S3_BUCKET;
 
+var fps = parseInt(process.env.FPS, 10) || 2; // 2 frames per second
+
 var debug = require('debug')('clickberry:video-frames:worker');
 var Bus = require('./lib/bus');
 var bus = new Bus();
@@ -14,17 +16,12 @@ function handleError(err) {
   console.error(err);
 }
 
-function publishFrameEvent(videoId, segmentIdx, fps, framesPerSegment, frameIdx, frameUri, fn) {
-  // calculating absolute frame index using segment idx and number of frames per segment
-  var frameAbsoluteIdx = segmentIdx * framesPerSegment + frameIdx;
-
+function publishFrameEvent(videoId, segmentIdx, frameIdx, frameUri, fn) {
   var data = {
     videoId: videoId,
     segmentIdx: segmentIdx,
-    fps: fps,
-    framesPerSegment: framesPerSegment,
-    uri: frameUri,
-    frameIdx: frameAbsoluteIdx
+    frameIdx: frameAbsoluteIdx,
+    uri: frameUri
   };
 
   bus.publishVideoFrameCreated(data, fn);
@@ -38,7 +35,7 @@ bus.on('segment', function (msg) {
   var sequencer = new Sequencer()
     .on('frame', function (frame) {
       // generate frame event
-      publishFrameEvent(segment.videoId, segment.segmentIdx, segment.fps, segment.framesPerSegment, frame.idx, frame.uri, function (err) {
+      publishFrameEvent(segment.videoId, segment.segmentIdx, frame.idx, frame.uri, function (err) {
         if (err) handleError(err);
       });
     })
@@ -46,7 +43,7 @@ bus.on('segment', function (msg) {
       handleError(err);
     });
 
-  sequencer.downloadAndExtractToS3(segment.videoId, segment.uri, bucket, function (err) {
+  sequencer.downloadAndExtractToS3(segment.videoId, segment.uri, bucket, segment.fps, fps, function (err) {
     if (err && !err.fatal) {
       // re-queue the message again if not fatal
       debug('Video segment processing failed (' + segment.uri +  '), skipping the file: ' + err);
