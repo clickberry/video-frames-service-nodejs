@@ -16,9 +16,10 @@ function handleError(err) {
   console.error(err);
 }
 
-function publishFrameEvent(videoId, segmentIdx, frameIdx, frameUri, fn) {
+function publishFrameEvent(videoId, videoUri, segmentIdx, frameIdx, frameUri, fn) {
   var data = {
     videoId: videoId,
+    videoUri: videoUri,
     segmentIdx: segmentIdx,
     frameIdx: frameIdx,
     uri: frameUri
@@ -35,7 +36,7 @@ bus.on('segment', function (msg) {
   var sequencer = new Sequencer()
     .on('frame', function (frame) {
       // generate frame event
-      publishFrameEvent(segment.videoId, segment.segmentIdx, frame.idx, frame.uri, function (err) {
+      publishFrameEvent(segment.videoId, segment.videoUri, segment.segmentIdx, frame.idx, frame.uri, function (err) {
         if (err) handleError(err);
       });
     })
