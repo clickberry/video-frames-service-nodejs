@@ -38,7 +38,7 @@ bus.on('segment', function (msg) {
   var sequencer = new Sequencer()
     .on('frame', function (frame) {
       // generate frame event
-      publishFrameEvent(segment.id, frame.idx, frame.uri, function (err) {
+      publishFrameEvent(segment.videoId, segment.segmentIdx, segment.fps, segment.framesPerSegment, frame.idx, frame.uri, function (err) {
         if (err) handleError(err);
       });
     })
@@ -46,7 +46,7 @@ bus.on('segment', function (msg) {
       handleError(err);
     });
 
-  sequencer.downloadAndExtractToS3(segment.uri, bucket, function (err) {
+  sequencer.downloadAndExtractToS3(segment.videoId, segment.uri, bucket, function (err) {
     if (err && !err.fatal) {
       // re-queue the message again if not fatal
       debug('Video segment processing failed (' + segment.uri +  '), skipping the file: ' + err);
